@@ -179,6 +179,9 @@ int vmp_walk_and_record_stack(PY_STACK_FRAME_T *frame, void ** result,
     // PyPy saves the information of an address in the same way as line information
     // is saved in CPython. _write_python_stack_entry for details.
     //
+
+    int depth = 0;
+
 #ifdef VMP_SUPPORTS_NATIVE_PROFILING
     void * func_addr;
     unw_cursor_t cursor;
@@ -248,7 +251,6 @@ int vmp_walk_and_record_stack(PY_STACK_FRAME_T *frame, void ** result,
 #endif
     }
 
-    int depth = 0;
     //PY_STACK_FRAME_T * top_most_frame = frame;
     while ((depth + _per_loop()) <= max_depth) {
         unw_get_proc_info(&cursor, &pip);
@@ -281,7 +283,8 @@ int vmp_walk_and_record_stack(PY_STACK_FRAME_T *frame, void ** result,
 
         if (IS_VMPROF_EVAL((void*)pip.start_ip)) {
             // yes we found one stack entry of the python frames!
-            return vmp_walk_and_record_python_stack_only(frame, result, max_depth, depth, pc);
+            depth = vmp_walk_and_record_python_stack_only(frame, result, max_depth, depth, pc);
+            return depth;
 #ifdef PYPY_JIT_CODEMAP
         } else if (pypy_find_codemap_at_addr(rip, &start_addr) != NULL) {
             depth = vmprof_write_header_for_jit_addr(result, depth, pc, max_depth);
@@ -307,7 +310,10 @@ int vmp_walk_and_record_stack(PY_STACK_FRAME_T *frame, void ** result,
 
     // if we come here, the found stack trace is removed and only python stacks are recorded
 #endif
-    return vmp_walk_and_record_python_stack_only(frame, result, max_depth, 0, pc);
+
+
+    depth = vmp_walk_and_record_python_stack_only(frame, result, max_depth, depth, pc);
+    return depth;
 }
 
 int vmp_native_enabled(void) {
