@@ -284,7 +284,6 @@ int vmp_walk_and_record_stack(PY_STACK_FRAME_T *frame, void ** result,
         if (IS_VMPROF_EVAL((void*)pip.start_ip)) {
             // yes we found one stack entry of the python frames!
             depth = vmp_walk_and_record_python_stack_only(frame, result, max_depth, depth, pc);
-            return depth;
 #ifdef PYPY_JIT_CODEMAP
         } else if (pypy_find_codemap_at_addr(rip, &start_addr) != NULL) {
             depth = vmprof_write_header_for_jit_addr(result, depth, pc, max_depth);
