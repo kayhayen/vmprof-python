@@ -58,7 +58,7 @@ class Stats(object):
         return self.meta.get('argv', '')
 
     def getmeta(self, key, default):
-        return self.meta.get(key, default) 
+        return self.meta.get(key, default)
 
     def display(self, no):
         prof = self.profiles[no][0]
@@ -115,15 +115,27 @@ class Stats(object):
             raise EmptyProfileFile()
         top_addr = prof[0][0]
         top = Node(top_addr, self._get_name(top_addr))
-        top.count = len(self.profiles)
+        top.count = len(profiles)
         return top
 
     def get_tree(self):
-        # fine the first non-empty profile
-
-        top = self.get_top(self.profiles)
-        addr = None
+        # find the non-empty profiles
+        profiles = []
         for profile in self.profiles:
+            while 1:
+                if not profile[0]:
+                    break
+
+                top_addr = profile[0][0]
+                if "native symbol" not in self._get_name(top_addr):
+                    profiles.append(profile)
+                    break
+
+                del profile[0][0]
+
+        top = self.get_top(profiles)
+        addr = None
+        for profile in profiles:
             last_addr = top.addr
             cur = top
             for i in range(0, len(profile[0])):
