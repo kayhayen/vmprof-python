@@ -12,13 +12,14 @@ from collections import namedtuple
 
 from vmprof.stats import EmptyProfileFile
 
+use_color = sys.stdout.isatty()
 
 class color(six.text_type):
-    RED = '\033[31m'
-    WHITE = '\033[37m'
-    BLUE = '\033[94m'
-    BOLD = '\033[1m'
-    END = '\033[0m'
+    RED = '\033[31m' if use_color else ""
+    WHITE = '\033[37m' if use_color else ""
+    BLUE = '\033[94m' if use_color else ""
+    BOLD = '\033[1m' if use_color else ""
+    END = '\033[0m' if use_color else ""
 
     def __new__(cls, content, color, bold=False):
         return six.text_type.__new__(
